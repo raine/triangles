@@ -7,9 +7,7 @@ main = ->
 	paper = Raphael $("#canvas")
 	snapCircles = paper.set()
 
-	paperClick = (ev, x, y) ->
-		return if path_selection
-
+	createAnchor = (x, y) ->
 		c = paper.circle x, y, 3
 		c.attr
 			fill: 'black'
@@ -56,6 +54,7 @@ main = ->
 				snapTo = pointWithinAnyCircle otherCircles, mouseX, mouseY
 
 				if snapTo
+					# path.remove()
 					# DO SOMETHING
 				else
 					path.remove()
@@ -63,8 +62,6 @@ main = ->
 				paper.raphael.unmousemove throttledUpdate
 				paper.raphael.unclick fixPath
 				path_selection = false
-
-				console.dir path
 
 			throttledUpdate = _.throttle updatePath, 10
 
@@ -79,6 +76,30 @@ main = ->
 
 		snapCircles.push snapCircle
 
+	createPath = (x1, y1, x2, y2) ->
+		path = paper.path()
+		path.attr
+			'stroke': '#555'
+			'stroke-width': 2
+			path: "M#{x1} #{y1} L#{x2} #{y2}"
+
+		path.toBack()
+
+	paperClick = (ev, x, y) ->
+		return if path_selection
+		createAnchor x, y
+
 	paper.raphael.click paperClick
+
+	createAnchor 50, 50
+	createAnchor 200, 50
+	createAnchor 50, 150
+	createAnchor 200, 150
+
+	createPath 50, 50, 200, 50
+	createPath 50, 50, 50, 150
+	createPath 50, 50, 200, 150
+	createPath 50, 150, 200, 150
+	createPath 200, 50, 200, 150
 
 $ -> main()
