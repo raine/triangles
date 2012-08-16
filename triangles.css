@@ -7,5 +7,9 @@ html, body {
 #canvas {
 	width: 512px;
 	height: 342px;
-	background-color: rgb(240,240,240);
+	background-color: rgb(245,245,245);
+}
+
+svg path {
+	pointer-events: none;
 }
