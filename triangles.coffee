@@ -63,23 +63,20 @@ main = ->
 			updatePath = (ev, mouseX, mouseY) =>
 				point = Canvas.instance.getPointsByPoint mouseX, mouseY
 
-				pathEnd = if point and point isnt this
-					"#{point.x} #{point.y}"
+				if point and point isnt this
+					l = "#{point.x} #{point.y}"
 				else
-					"#{mouseX} #{mouseY}"
+					l = "#{mouseX} #{mouseY}"
 
-				path.attr { path: "M#{@x} #{@y} L#{pathEnd}" }
-
+				path.attr { path: "M#{@x} #{@y} L#{l}" }
 
 			throttledUpdate = _.throttle updatePath, 10
 			Canvas.paper.raphael.mousemove throttledUpdate
-			# paper.raphael.click fixPath
 
 
 	canvas = new Canvas $("#canvas")
 	canvas.addPoint 50,  50
 	canvas.addPoint 100, 100
-	canvas.addPoint 100, 150
 
 	# snapCircles = paper.set()
 	# createAnchor = (x, y) ->
