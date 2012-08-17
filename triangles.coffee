@@ -1,162 +1,165 @@
-CIRCLE_SNAP_RADIUS = 8
-
 main = ->
-	# Indicates if path is being placed
-	path_selection = false
+	class Canvas
+		constructor: (arg) ->
+			@paper = Raphael arg
+			Canvas.paper    = @paper
+			Canvas.instance = this
 
-	paper = Raphael $("#canvas")
-	snapCircles = paper.set()
+			@points = []
+			@path_mode = false
 
-	createAnchor = (x, y) ->
-		c = paper.circle x, y, 3
-		c.attr
-			fill: 'black'
-			stroke: null
+			@paper.raphael.click @click
 
-		snapCircle = paper.circle x, y, CIRCLE_SNAP_RADIUS
-		snapCircle.attr
-			'fill-opacity': 0.1
-			fill: '#000'
-			stroke: null
+		addPoint: (x, y) ->
+			console.log "Adding a point to x: #{x}, y: #{y}"
+			@points.push new Point x, y
 
-		snapCircle.data 'parent', c
+		click: (event, x, y) =>
+			@addPoint x, y unless @path_mode
 
-		startPath = (ev, x, y) ->
-			return if path_selection
-			path_selection = true
+		# Returns Point at x,y including the snap radius
+		getPointsByPoint: (x, y) ->
+			circle = _.first _.filter @paper.getElementsByPoint(x, y), (e) ->
+				e.type is "circle"
 
-			path = paper.path()
+			circle?.data 'point'
+
+	class Point
+		POINT_RADIUS: 3
+		SNAP_RADIUS: 8
+
+		constructor: (@x, @y) ->
+			@circle = Canvas.paper.circle x, y, Point::POINT_RADIUS
+			@circle.attr
+				fill: 'black'
+				stroke: 'none'
+
+			@snap = Canvas.paper.circle x, y, Point::SNAP_RADIUS
+			@snap.attr
+				'fill-opacity': 0.1
+				fill: '#000'
+				stroke: 'none'
+
+			@circle.data 'point', this
+			@snap.data 'point', this
+
+			@snap.hover =>
+				@circle.attr { fill: 'red' }
+			, =>
+				@circle.attr { fill: '#000' }
+
+			@snap.click @startLine
+
+		startLine: (ev, x, y) =>
+			return if Canvas.instance.path_mode
+
+			ev.cancelBubble = true
+			Canvas.instance.path_mode = true
+
+			path = Canvas.paper.path()
 			path.attr { 'stroke': '#555', 'stroke-width': 2 }
 			path.toBack()
 
-			pointWithinAnyCircle = (circles, x, y) ->
-				_.find circles, (circle) ->
-					distance = Math.sqrt Math.pow(circle.attrs.cx - x, 2) + Math.pow(circle.attrs.cy - y, 2)
-					return circle if distance <= CIRCLE_SNAP_RADIUS
-
-			# Create a path and change attributes when mouse moves
 			updatePath = (ev, mouseX, mouseY) =>
-				otherCircles = _.without snapCircles, snapCircle
-				snapTo = pointWithinAnyCircle otherCircles, mouseX, mouseY
+				point = Canvas.instance.getPointsByPoint mouseX, mouseY
 
-				pathEnd = if snapTo
-					"#{snapTo.attrs.cx} #{snapTo.attrs.cy}"
+				pathEnd = if point and point isnt this
+					"#{point.x} #{point.y}"
 				else
 					"#{mouseX} #{mouseY}"
 
-				path.attr { path: "M#{this.attrs.cx} #{this.attrs.cy} L#{pathEnd}" }
+				path.attr { path: "M#{@x} #{@y} L#{pathEnd}" }
 
-			fixPath = (ev, mouseX, mouseY) =>
-				# Initial click ends up here, ignore it
-				return if snapCircle.isPointInside mouseX, mouseY
-
-				otherCircles = _.without snapCircles, snapCircle
-				snapTo = pointWithinAnyCircle otherCircles, mouseX, mouseY
-
-				if snapTo
-					# path.remove()
-					# DO SOMETHING
-				else
-					path.remove()
-
-				paper.raphael.unmousemove throttledUpdate
-				paper.raphael.unclick fixPath
-				path_selection = false
 
 			throttledUpdate = _.throttle updatePath, 10
+			Canvas.paper.raphael.mousemove throttledUpdate
+			# paper.raphael.click fixPath
 
-			paper.raphael.mousemove throttledUpdate
-			paper.raphael.click fixPath
 
-		snapCircle.click startPath
-		snapCircle.hover ->
-			c.attr { fill: 'red' }
-		, ->
-			c.attr { fill: '#000' }
+	canvas = new Canvas $("#canvas")
+	canvas.addPoint 50,  50
+	canvas.addPoint 100, 100
+	canvas.addPoint 100, 150
 
-		snapCircles.push snapCircle
+	# snapCircles = paper.set()
+	# createAnchor = (x, y) ->
+	#     startPath = (ev, x, y) ->
+	#         return if path_selection
+	#         path_selection = true
 
-	createLine = (x1, y1, x2, y2) ->
-		line = new Object()
-		line.connectedTo = (point) ->
-			_.any this.points, (p) -> _.isEqual(p, point)
+	#         path = paper.path()
+	#         path.attr { 'stroke': '#555', 'stroke-width': 2 }
+	#         path.toBack()
 
-		line.points = [ [x1, y1], [x2, y2] ]
+	#         pointWithinAnyCircle = (circles, x, y) ->
+	#             _.find circles, (circle) ->
+	#                 distance = Math.sqrt Math.pow(circle.attrs.cx - x, 2) + Math.pow(circle.attrs.cy - y, 2)
+	#                 return circle if distance <= CIRCLE_SNAP_RADIUS
 
-		path = paper.path()
-		path.attr
-			'stroke': '#555'
-			'stroke-width': 2
-			path: "M#{x1} #{y1} L#{x2} #{y2}"
+			# Create a path and change attributes when mouse moves
+	#         updatePath = (ev, mouseX, mouseY) =>
+	#             otherCircles = _.without snapCircles, snapCircle
+	#             snapTo = pointWithinAnyCircle otherCircles, mouseX, mouseY
 
-		path.toBack()
+	#             pathEnd = if snapTo
+	#                 "#{snapTo.attrs.cx} #{snapTo.attrs.cy}"
+	#             else
+	#                 "#{mouseX} #{mouseY}"
 
-		line.path = path
-		line
+	#             path.attr { path: "M#{this.attrs.cx} #{this.attrs.cy} L#{pathEnd}" }
 
-	paperClick = (ev, x, y) ->
-		return if path_selection
-		createAnchor x, y
+	#         fixPath = (ev, mouseX, mouseY) =>
+				# Initial click ends up here, ignore it
+	#             return if snapCircle.isPointInside mouseX, mouseY
 
-	paper.raphael.click paperClick
+	#             otherCircles = _.without snapCircles, snapCircle
+	#             snapTo = pointWithinAnyCircle otherCircles, mouseX, mouseY
 
-	createAnchor 50, 50
-	createAnchor 50, 150
-	createAnchor 200, 150
-	createAnchor 200, 50
+	#             if snapTo
+					# path.remove()
+					# DO SOMETHING
+	#             else
+	#                 path.remove()
 
-	lines = []
-	lines.push createLine 50, 50, 50, 150
-	lines.push createLine 50, 50, 200, 150
-	lines.push createLine 50, 150, 200, 150
-	lines.push createLine 50, 50, 200, 50
-	lines.push createLine 200, 50, 200, 150
+	#             paper.raphael.unmousemove throttledUpdate
+	#             paper.raphael.unclick fixPath
+	#             path_selection = false
 
-	triangles = []
+	#         throttledUpdate = _.throttle updatePath, 10
 
-	class Triangle
-		constructor: (l1, l2, l3) ->
-			@sides = [ l1, l2, l3 ]
+	#         paper.raphael.mousemove throttledUpdate
+	#         paper.raphael.click fixPath
 
-		isEqual: (target) ->
-			_.all @sides, (s) ->
-				_.include target.sides, s
+	#     snapCircle.click startPath
+	#     snapCircle.hover ->
+	#         c.attr { fill: 'red' }
+	#     , ->
+	#         c.attr { fill: '#000' }
 
-	# Traverses out from a line both ways
-	traverseLine = (startLine) ->
-		otherLines = _.without lines, startLine
+	#     snapCircles.push snapCircle
 
-		startLine.points.forEach (p1) ->
-			p2 = _.without(startLine.points, p1)[0]
+	# createLine = (x1, y1, x2, y2) ->
+	#     line = new Object()
+	#     line.connectedTo = (point) ->
+	#         _.any this.points, (p) -> _.isEqual(p, point)
 
-			# Find all lines that are connected to p1
-			connectedToP1 = _.filter otherLines, (line) ->
-				# See if any of the lines ends equal to p1
-				_.any line.points, (lp) -> _.isEqual p1, lp
+	#     line.points = [ [x1, y1], [x2, y2] ]
 
-			# Find all lines that are connected to startLine
-			connectedToStartLine = _.filter otherLines, (line) ->
-				_.any line.points, (lp) ->
-					_.isEqual(p1, lp) or _.isEqual(p2, lp)
+	#     path = paper.path()
+	#     path.attr
+	#         'stroke': '#555'
+	#         'stroke-width': 2
+	#         path: "M#{x1} #{y1} L#{x2} #{y2}"
 
-			# Find lines that are connected to a line that is connected to p2
-			connectedToP1.forEach (line) ->
-				# Get point of line that is not connected to startLine
-				removePoint = (points, removeThis) ->
-					_.reject points, (p) -> _.isEqual(p, removeThis)
+	#     path.toBack()
 
-				point = removePoint(line.points, p1)[0]
+	#     line.path = path
+	#     line
 
-				lns = _.without connectedToStartLine, line
-				lns.forEach (l) ->
-					if l.connectedTo(point) and l.connectedTo(p2)
-						triangle = new Triangle startLine, line, l
+	# paperClick = (ev, x, y) ->
+	#     return if path_selection
+	#     createAnchor x, y
 
-						unless _.any(triangles, (t) -> t.isEqual triangle)
-							triangles.push triangle
+	# paper.raphael.click paperClick
 
-	traverseLine lines[1]
-
-	triangles[0].sides.forEach (e) -> e.path.attr { stroke: 'blue' }
-	
 $ -> main()
