@@ -78,6 +78,9 @@ main = ->
 
 	createLine = (x1, y1, x2, y2) ->
 		line = new Object()
+		line.connectedTo = (point) ->
+			_.any this.points, (p) -> _.isEqual(p, point)
+
 		line.points = [ [x1, y1], [x2, y2] ]
 
 		path = paper.path()
@@ -100,82 +103,60 @@ main = ->
 	createAnchor 50, 50
 	createAnchor 50, 150
 	createAnchor 200, 150
-	# createAnchor 200, 50
+	createAnchor 200, 50
 
 	lines = []
 	lines.push createLine 50, 50, 50, 150
 	lines.push createLine 50, 50, 200, 150
 	lines.push createLine 50, 150, 200, 150
-	# lines.push createLine 50, 50, 200, 50
-	# lines.push createLine 200, 50, 200, 150
-
+	lines.push createLine 50, 50, 200, 50
+	lines.push createLine 200, 50, 200, 150
 
 	triangles = []
 
+	class Triangle
+		constructor: (l1, l2, l3) ->
+			@sides = [ l1, l2, l3 ]
+
+		isEqual: (target) ->
+			_.all @sides, (s) ->
+				_.include target.sides, s
+
+	# Traverses out from a line both ways
 	traverseLine = (startLine) ->
-		startLine.path.attr { stroke: 'red' }
+		otherLines = _.without lines, startLine
 
+		startLine.points.forEach (p1) ->
+			p2 = _.without(startLine.points, p1)[0]
 
-	traverseLine lines[0]
+			# Find all lines that are connected to p1
+			connectedToP1 = _.filter otherLines, (line) ->
+				# See if any of the lines ends equal to p1
+				_.any line.points, (lp) -> _.isEqual p1, lp
 
-	first = lines[0]
-	first.path.attr
-		stroke: 'red'
-	
-	otherLines = _.without lines, first
+			# Find all lines that are connected to startLine
+			connectedToStartLine = _.filter otherLines, (line) ->
+				_.any line.points, (lp) ->
+					_.isEqual(p1, lp) or _.isEqual(p2, lp)
 
-	pointEq = (p1, p2) ->
-		p1.join() == p2.join()
-	
-	first.points.forEach (p) ->
-		console.log "point: #{p}"
-		otherPoint = _.without first.points, p
-		console.log "otherPoint: #{otherPoint}"
+			# Find lines that are connected to a line that is connected to p2
+			connectedToP1.forEach (line) ->
+				# Get point of line that is not connected to startLine
+				removePoint = (points, removeThis) ->
+					_.reject points, (p) -> _.isEqual(p, removeThis)
 
-		# Find lines that are connected to p
-		connected = _.filter otherLines, (line) ->
-			# See if any of the lines ends equal to p
-			_.any line.points, (lp) -> _.isEqual p, lp
+				point = removePoint(line.points, p1)[0]
 
-		console.dir "connected:"
-		console.dir connected
+				lns = _.without connectedToStartLine, line
+				lns.forEach (l) ->
+					if l.connectedTo(point) and l.connectedTo(p2)
+						triangle = new Triangle startLine, line, l
 
-		# connected.forEach (l) -> l.path.attr { stroke: 'green' }
+						unless _.any(triangles, (t) -> t.isEqual triangle)
+							triangles.push triangle
 
-		# Find lines that are connected to a line that is connected to otherPoint
-		# TODO: foreach
-		_.filter connected, (line) ->
-			# TODO: connected should be all lines connected to line instaed
-			# of lines connected to p			
-			lns = _.without connected, line
-			console.dir lns
-			# lns.forEach (l) -> l.path.attr { stroke: 'blue' }
+	traverseLine lines[1]
 
-			_.filter lns, (l) ->
-				# Remove point connected to first
-				point = _.reject l.points, (pt) -> _.isEqual pt, p
-
-				# Find lines that are connected to both otherPoint and point
-				ok = _.find otherLines, (_l) ->
-					_.all _l.points, (pp) -> pointEq(pp, otherPoint) or pointEq(pp, point)
-
-				triangles.push [ first, l, ok ] if ok
-
-		console.log ""
-		console.log "NEXT"
-		console.log ""
-
-	console.log "triangles"
-	console.dir triangles
-
-	# Select lines that connect with either end of ´first´
-	# l1 = _.filter _.without(lines, first), (line) ->
-	#     _.any first.points, (point) ->
-	#         _.any line.points, (lp) ->
-	#             _.isEqual point, lp
-	
-	# l1.forEach (l) ->
-	#     l.path.attr
-	#         stroke: 'red'
+	triangles[0].sides.forEach (e) -> e.path.attr { stroke: 'blue' }
 	
 $ -> main()
