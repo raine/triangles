@@ -20,6 +20,15 @@ main = ->
 
 		addLine: (x1, y1, x2, y2) ->
 			@lines.push new Line x1, y1, x2, y2
+			@checkConnections arguments...
+
+		checkConnections: (x1, y1, x2, y2) ->
+			points = _.filter @points, (p) ->
+				(p.x is x1 and p.y is y1) or
+				(p.x is x2 and p.y is y2)
+
+			points[0].connect points[1]
+			points[1].connect points[0]
 
 		click: (event, x, y) =>
 			@addPoint x, y unless @path_mode
@@ -36,6 +45,7 @@ main = ->
 
 	class Line
 		constructor: (obj) ->
+			# obsolete
 			if obj.type is 'path'
 				@path  = obj
 				@start = @path.attrs.path[0].slice(1, 3)
@@ -61,6 +71,8 @@ main = ->
 		SNAP_RADIUS: 8
 
 		constructor: (@x, @y) ->
+			@connected = []
+
 			@circle = Canvas.paper.circle x, y, Point::POINT_RADIUS
 			@circle.attr
 				fill: 'black'
@@ -102,11 +114,11 @@ main = ->
 
 				path.attr { path: "M#{@x} #{@y} L#{l}" }
 
-			fixPath = (ev, mouseX, mouseY) ->
+			fixPath = (ev, mouseX, mouseY) =>
 				point = Canvas.instance.getPointsByPoint mouseX, mouseY
 
 				if point and point isnt this
-					Canvas.instance.lines.push new Line path
+					Canvas.instance.addLine @x, @y, point.x, point.y
 				else
 					path.remove()
 
@@ -118,6 +130,12 @@ main = ->
 			Canvas.paper.raphael.mousemove throttledUpdate
 			Canvas.paper.raphael.click fixPath
 
+		toString: ->
+			[ @x, @y ].join ','
+
+		connect: (point) ->
+			console.log "Point #{this} connected to #{point}"
+			@connected.push point
 
 	canvas = new Canvas $("#canvas")
 	canvas.addPoint 50,  50
