@@ -1,3 +1,6 @@
+# TODO: manage things when points are connected
+# XXX: Canvas.instance could be saved into an instance variable
+
 main = ->
 	class Canvas
 		constructor: (arg) ->
@@ -6,24 +9,53 @@ main = ->
 			Canvas.instance = this
 
 			@points = []
+			@lines  = []
 			@path_mode = false
 
 			@paper.raphael.click @click
 
 		addPoint: (x, y) ->
-			console.log "Adding a point to x: #{x}, y: #{y}"
+			console.log "Point added – x: #{x}, y: #{y}"
 			@points.push new Point x, y
+
+		addLine: (x1, y1, x2, y2) ->
+			@lines.push new Line x1, y1, x2, y2
 
 		click: (event, x, y) =>
 			@addPoint x, y unless @path_mode
 
 		# Returns Point at x,y including the snap radius
 		getPointsByPoint: (x, y) ->
+			# TODO: getElementsByPoint is bugged, can be solved with
+			# pythagorean equation; problem is that it doesn't always detect
+			# the elements
 			circle = _.first _.filter @paper.getElementsByPoint(x, y), (e) ->
 				e.type is "circle"
 
 			circle?.data 'point'
 
+	class Line
+		constructor: (obj) ->
+			if obj.type is 'path'
+				@path  = obj
+				@start = @path.attrs.path[0].slice(1, 3)
+				@end   = @path.attrs.path[1].slice(1, 3)
+
+			else if arguments.length is 4 # x1, y1, x2, y2
+				args = Array::slice.call arguments
+				@start = args.slice 0, 2
+				@end   = args.slice 2, 4
+
+				@path = Canvas.paper.path()
+				@path.attr
+					'stroke': '#555'
+					'stroke-width': 2
+					path: "M#{@start.join ','} L#{@end.join ','}"
+
+				@path.toBack()
+
+			console.log "Line added from #{@start} to #{@end}"
+	
 	class Point
 		POINT_RADIUS: 3
 		SNAP_RADIUS: 8
@@ -70,13 +102,29 @@ main = ->
 
 				path.attr { path: "M#{@x} #{@y} L#{l}" }
 
+			fixPath = (ev, mouseX, mouseY) ->
+				point = Canvas.instance.getPointsByPoint mouseX, mouseY
+
+				if point and point isnt this
+					Canvas.instance.lines.push new Line path
+				else
+					path.remove()
+
+				Canvas.paper.raphael.unclick fixPath
+				Canvas.paper.raphael.unmousemove throttledUpdate
+				Canvas.instance.path_mode = false
+
 			throttledUpdate = _.throttle updatePath, 10
 			Canvas.paper.raphael.mousemove throttledUpdate
+			Canvas.paper.raphael.click fixPath
 
 
 	canvas = new Canvas $("#canvas")
 	canvas.addPoint 50,  50
 	canvas.addPoint 100, 100
+
+	canvas.addLine 50, 50, 100, 100
+	# canvas.addLine 100, 100, 200, 200
 
 	# snapCircles = paper.set()
 	# createAnchor = (x, y) ->
@@ -124,8 +172,8 @@ main = ->
 
 	#         throttledUpdate = _.throttle updatePath, 10
 
-	#         paper.raphael.mousemove throttledUpdate
-	#         paper.raphael.click fixPath
+	#         paper.raphael.mousemove throttledupdate
+	#         paper.raphael.click fixpath
 
 	#     snapCircle.click startPath
 	#     snapCircle.hover ->
