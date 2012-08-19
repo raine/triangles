@@ -1,13 +1,25 @@
 # XXX: Canvas.instance could be saved into an instance variable
+# TODO: don't rand but cycle colors
 # TODO: dragging but who cares really
+# TODO: rainbow colors
 
 COLORS = [ '#D1F2A5', '#EFFAB4', '#FFC48C', '#FF9F80', '#F56991' ]
+
+class Rotate
+	constructor: (@arr) ->
+		@i = 0
+
+	next: ->
+		@i = 0 if @i is @arr.length
+		@arr[@i++]
+
 # COLORS = [ 'blue', 'lime', 'fuchsia', 'yellow', 'red', 'purple', 'maroon', 'aqua', 'navy', 'teal', 'olive', 'green' ]
 
 main = ->
 	class Canvas
 		constructor: (arg) ->
-			@paper = Raphael arg
+			@paper  = Raphael arg
+			@colors = new Rotate COLORS
 			Canvas.paper    = @paper
 			Canvas.instance = this
 
@@ -36,6 +48,10 @@ main = ->
 
 			@checkTriangles points[1]
 
+		triangleExists: (points...) ->
+			_.any @triangles, (t) ->
+				_.difference(t.points, points).length is 0
+
 		checkTriangles: (point) ->
 			checked = []
 
@@ -46,8 +62,10 @@ main = ->
 				notChecked = _.without p.connected, checked...
 				notChecked.forEach (_p) =>
 					if _.include _p.connected, point
-						# TODO: shouldn't add same triangle twice
-						@triangles.push new Triangle point, p, _p
+						unless @triangleExists point, p, _p
+							@triangles.push new Triangle point, p, _p
+						else
+							console.log 'Triangle exists'
 
 				checked.push p
 
@@ -66,6 +84,7 @@ main = ->
 
 	class Triangle
 		constructor: (@points...) ->
+			console.log 'New triangle'
 			@fill()
 
 		fill: ->
@@ -74,7 +93,7 @@ main = ->
 			pathStr = "M#{p1.x} #{p1.y} L#{p2.x} #{p2.y} L#{p3.x} #{p3.y} Z"
 			path = Canvas.paper.path pathStr
 			path.attr
-				fill : _.first _.shuffle COLORS
+				fill : Canvas.instance.colors.next()
 				'fill-opacity': 0.3
 				stroke: 'none'
 			path.toBack()
@@ -178,18 +197,18 @@ main = ->
 
 	canvas = new Canvas $("#canvas")
 
-	# canvas.addPoint 50,  50
-	# canvas.addPoint 100, 100
-	# canvas.addPoint 50,  150
-	# canvas.addPoint 100,  50
+	canvas.addPoint 50,  50
+	canvas.addPoint 100, 100
+	canvas.addPoint 50,  150
+	canvas.addPoint 100,  50
 
-	# canvas.addLine 50, 50, 100, 100
-	# canvas.addLine 50, 50, 50, 150
-	# canvas.addLine 100, 100, 50, 150
+	canvas.addLine 50, 50, 100, 100
+	canvas.addLine 50, 50, 50, 150
+	canvas.addLine 100, 100, 50, 150
 
-	# canvas.addLine 50, 50, 100, 50
-	# canvas.addLine 100, 50, 100, 100
+	canvas.addLine 50, 50, 100, 50
+	canvas.addLine 100, 50, 100, 100
 
-	# canvas.checkTriangles canvas.points[0]
+	canvas.checkTriangles canvas.points[0]
 
 $ -> main()
