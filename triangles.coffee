@@ -1,4 +1,8 @@
 # XXX: Canvas.instance could be saved into an instance variable
+# TODO: dragging but who cares really
+
+COLORS = [ '#D1F2A5', '#EFFAB4', '#FFC48C', '#FF9F80', '#F56991' ]
+# COLORS = [ 'blue', 'lime', 'fuchsia', 'yellow', 'red', 'purple', 'maroon', 'aqua', 'navy', 'teal', 'olive', 'green' ]
 
 main = ->
 	class Canvas
@@ -7,8 +11,9 @@ main = ->
 			Canvas.paper    = @paper
 			Canvas.instance = this
 
-			@points = []
-			@lines  = []
+			@points    = []
+			@lines     = []
+			@triangles = []
 			@path_mode = false
 
 			@paper.raphael.click @click
@@ -29,6 +34,23 @@ main = ->
 			points[0].connect points[1]
 			points[1].connect points[0]
 
+			@checkTriangles points[1]
+
+		checkTriangles: (point) ->
+			checked = []
+
+			# Check every connected points connections and see which are
+			# connected to ´point´
+			point.connected.forEach (p) =>
+				# ´p´s connections that are connected to ´point´
+				notChecked = _.without p.connected, checked...
+				notChecked.forEach (_p) =>
+					if _.include _p.connected, point
+						# TODO: shouldn't add same triangle twice
+						@triangles.push new Triangle point, p, _p
+
+				checked.push p
+
 		click: (event, x, y) =>
 			@addPoint x, y unless @path_mode
 
@@ -41,6 +63,21 @@ main = ->
 				e.type is "circle"
 
 			circle?.data 'point'
+
+	class Triangle
+		constructor: (@points...) ->
+			@fill()
+
+		fill: ->
+			[ p1, p2, p3 ] = @points
+
+			pathStr = "M#{p1.x} #{p1.y} L#{p2.x} #{p2.y} L#{p3.x} #{p3.y} Z"
+			path = Canvas.paper.path pathStr
+			path.attr
+				fill : _.first _.shuffle COLORS
+				'fill-opacity': 0.3
+				stroke: 'none'
+			path.toBack()
 
 	class Line
 		constructor: (obj) ->
@@ -64,7 +101,7 @@ main = ->
 				@path.toBack()
 
 			console.log "Line added from #{@start} to #{@end}"
-	
+
 	class Point
 		POINT_RADIUS: 3
 		SNAP_RADIUS: 8
@@ -118,8 +155,8 @@ main = ->
 
 				if point and point isnt this
 					Canvas.instance.addLine @x, @y, point.x, point.y
-				else
-					path.remove()
+
+				path.remove()
 
 				Canvas.paper.raphael.unclick fixPath
 				Canvas.paper.raphael.unmousemove throttledUpdate
@@ -136,13 +173,23 @@ main = ->
 			console.log "Point #{this} connected to #{point}"
 			@connected.push point
 
-	canvas = new Canvas $("#canvas")
-	canvas.addPoint 50,  50
-	canvas.addPoint 100, 100
-	canvas.addPoint 50,  150
+		color: (str) ->
+			@circle.attr { fill: str }
 
-	canvas.addLine 50, 50, 100, 100
-	canvas.addLine 50, 50, 50, 150
-	canvas.addLine 100, 100, 50, 150
+	canvas = new Canvas $("#canvas")
+
+	# canvas.addPoint 50,  50
+	# canvas.addPoint 100, 100
+	# canvas.addPoint 50,  150
+	# canvas.addPoint 100,  50
+
+	# canvas.addLine 50, 50, 100, 100
+	# canvas.addLine 50, 50, 50, 150
+	# canvas.addLine 100, 100, 50, 150
+
+	# canvas.addLine 50, 50, 100, 50
+	# canvas.addLine 100, 50, 100, 100
+
+	# canvas.checkTriangles canvas.points[0]
 
 $ -> main()
