@@ -11,8 +11,6 @@ class Rotate
 		@i = 0 if @i is @arr.length
 		@arr[@i++]
 
-# COLORS = [ 'blue', 'lime', 'fuchsia', 'yellow', 'red', 'purple', 'maroon', 'aqua', 'navy', 'teal', 'olive', 'green' ]
-
 main = ->
 	class Canvas
 		constructor: (arg) ->
