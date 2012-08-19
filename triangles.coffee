@@ -1,9 +1,7 @@
 # XXX: Canvas.instance could be saved into an instance variable
 # TODO: dragging but who cares really
-# TODO: rainbow colors
 
-# COLORS = [ '#D1F2A5', '#EFFAB4', '#FFC48C', '#FF9F80', '#F56991' ]
-COLORS = [ '#FF4D4D', '#FF9D4D', '#FFF64D', '#8EFF4D', '#4DDBFF' ]
+COLORS = _.shuffle [ '#FF4D4D', '#FF9D4D', '#FFF64D', '#8EFF4D', '#4DDBFF' ]
 
 class Rotate
 	constructor: (@arr) ->
