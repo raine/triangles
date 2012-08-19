@@ -1,9 +1,9 @@
 # XXX: Canvas.instance could be saved into an instance variable
-# TODO: don't rand but cycle colors
 # TODO: dragging but who cares really
 # TODO: rainbow colors
 
-COLORS = [ '#D1F2A5', '#EFFAB4', '#FFC48C', '#FF9F80', '#F56991' ]
+# COLORS = [ '#D1F2A5', '#EFFAB4', '#FFC48C', '#FF9F80', '#F56991' ]
+COLORS = [ '#FF4D4D', '#FF9D4D', '#FFF64D', '#8EFF4D', '#4DDBFF' ]
 
 class Rotate
 	constructor: (@arr) ->
@@ -94,7 +94,7 @@ main = ->
 			path = Canvas.paper.path pathStr
 			path.attr
 				fill : Canvas.instance.colors.next()
-				'fill-opacity': 0.3
+				'fill-opacity': 0.5
 				stroke: 'none'
 			path.toBack()
 
