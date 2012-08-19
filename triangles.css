@@ -11,5 +11,6 @@ html, body {
 }
 
 svg path {
+	/* ignores hover on paths */
 	pointer-events: none;
 }
