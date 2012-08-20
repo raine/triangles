@@ -1,5 +1,6 @@
 # XXX: Canvas.instance could be saved into an instance variable
 # TODO: dragging but who cares really
+# TODO: ability to add points in middle of a line
 
 COLORS = _.shuffle [ '#FF4D4D', '#FF9D4D', '#FFF64D', '#8EFF4D', '#4DDBFF' ]
 
@@ -15,7 +16,30 @@ class Canvas
 		@triangles = []
 		@path_mode = false
 
-		@paper.raphael.click @click
+		@paper.raphael.click @clickHandler
+		@paper.raphael.mousemove @mousemoveHandler
+
+	mousemoveHandler: (event, x, y) =>
+		any = false
+
+		for line in @lines
+			mousePoint = line.pointWithinRange x, y, 15
+
+			if mousePoint
+				any = true
+				@c ?= Canvas.paper.circle mousePoint.x, mousePoint.y, 3
+				@c.attr
+					fill: '#555'
+					stroke: 'none'
+					cx: mousePoint.x
+					cy: mousePoint.y
+
+		if not any and @c
+			@c.remove()
+			delete @c
+
+	clickHandler: (event, x, y) =>
+		@addPoint x, y unless @path_mode
 
 	addPoint: (x, y) ->
 		console.log "Point added – x: #{x}, y: #{y}"
@@ -55,9 +79,6 @@ class Canvas
 						console.log 'Triangle exists'
 
 			checked.push p
-
-	click: (event, x, y) =>
-		@addPoint x, y unless @path_mode
 
 	# Returns Point at x,y including the snap radius
 	getPointsByPoint: (x, y) ->
@@ -106,7 +127,32 @@ class Line
 
 			@path.toBack()
 
-		console.log "Line added from #{@start} to #{@end}"
+	# See if (x, y) is within range of the line
+	# Returns Raphael point object of mouse coordinates on the line
+	pointWithinRange: (x, y, range) ->
+		# @start, @end and (x, y) form a triangle
+		# Below are the sides of the triangle
+		base = @path.getTotalLength()
+		d1   = Utils.distance @start[0], @start[1], x, y
+		d2   = Utils.distance @end[0], @end[1], x, y
+
+		# If base is the longest side, (x, y) is "between" @start and @end
+		if base > d1 and base > d2
+			p    = (base + d1 + d2) / 2 						  # Semiperimeter of the triangle
+			area = Math.sqrt p * (p - d1) * (p - d2) * (p - base) # Area of the triangle
+			h    = (2 * area) / base 							  # Altitude of the triangle from base
+
+			if h <= 10
+				s = d1 / Math.sin Math.PI/2   # Law of Sines ratio
+				a = Math.asin h / s           # Angle of the corner at @start
+				b = Math.PI - (Math.PI/2 + a) # Angle of the corner at (x, y)
+
+				# Distance from @start to position of mouse on the line
+				l = Math.sqrt Math.pow(d1, 2) + Math.pow(h, 2) - (2 * d1 * h * Math.cos(b))
+				# Coordinates of mouse on the line
+				@path.getPointAtLength l
+		else
+			false
 
 class Point
 	POINT_RADIUS: 3

@@ -12,5 +12,3 @@ $ ->
 
 	canvas.addLine 50, 50, 100, 50
 	canvas.addLine 100, 50, 100, 100
-
-	canvas.checkTriangles canvas.points[0]
