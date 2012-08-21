@@ -3,6 +3,7 @@
 # TODO: ability to add points in middle of a line
 # TODO: don't show line snap circle when placing a line
 # TODO: don't show line snap circle when hovering a point
+# TODO: manage connections when a point is added in the middle of a line
 
 COLORS = _.shuffle [ '#FF4D4D', '#FF9D4D', '#FFF64D', '#8EFF4D', '#4DDBFF' ]
 
@@ -16,13 +17,13 @@ class Canvas
 		@points    = []
 		@lines     = []
 		@triangles = []
-		@pathMode = false
+		@pathMode  = false
 
 		@paper.raphael.click @clickHandler
 		@paper.raphael.mousemove @mousemoveHandler
 
 	mousemoveHandler: (event, x, y) =>
-		@snapMouseToLine x, y
+		@snapMouseToLine x, y # don't do this when hovering a circle
 
 	snapMouseToLine: (x, y) ->
 		for line, i in @lines
@@ -34,6 +35,8 @@ class Canvas
 					# Create a circle on the line in position nearest to mouse
 					@snapLineC = Canvas.paper.circle _x, _y, Point::POINT_RADIUS
 					@snapLineC.attr { fill: '#333', stroke: 'none' }
+					# Ignore mouse events on the circle
+					@snapLineC.node.style.pointerEvents = 'none'
 
 				@snapLineC.attr { cx: _x, cy: _y }
 				@snapLineMode = true
@@ -41,9 +44,9 @@ class Canvas
 
 			# Disable the mode if none of the lines match and it's enabled
 			if @snapLineMode and i is @lines.length - 1
-				@disableSnapLine()
+				@removeSnapLine()
 
-	disableSnapLine: ->
+	removeSnapLine: ->
 		@snapLineC?.remove()
 		@snapLineMode = false
 
@@ -51,7 +54,7 @@ class Canvas
 		if @snapLineMode
 			{ cx, cy } = @snapLineC.attr()
 			@addPoint cx, cy
-			@disableSnapLine()
+			@removeSnapLine()
 		else
 			@addPoint x, y unless @pathMode
 
@@ -190,6 +193,8 @@ class Point
 		@snap.data 'point', this
 
 		@snap.hover =>
+			# Canvas.instance
+			# Canvast.instance.snapLineDisable = true
 			@circle.attr { fill: 'red' }
 		, =>
 			@circle.attr { fill: '#000' }
