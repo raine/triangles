@@ -27,12 +27,15 @@ class Canvas
 	snapMouseToLine: (x, y) ->
 		for line, i in @lines
 			if mousePoint = line.pointWithinRange x, y, 20
+				_x = Math.round mousePoint.x
+				_y = Math.round mousePoint.y
+
 				if not @snapLineMode
 					# Create a circle on the line in position nearest to mouse
-					@snapLineC = Canvas.paper.circle mousePoint.x, mousePoint.y, Point::POINT_RADIUS
+					@snapLineC = Canvas.paper.circle _x, _y, Point::POINT_RADIUS
 					@snapLineC.attr { fill: '#333', stroke: 'none' }
 
-				@snapLineC.attr { cx: mousePoint.x , cy: mousePoint.y }
+				@snapLineC.attr { cx: _x, cy: _y }
 				@snapLineMode = true
 				break
 
