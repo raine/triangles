@@ -115,6 +115,15 @@ class Canvas
 
 		circle?.data 'point'
 
+	getLineByPoint: (x, y) ->
+		for line in @lines
+			# http://stackoverflow.com/questions/6865832/detecting-if-a-point-is-of-a-line-segment
+			# (Cy - Ay)  * (Bx - Ax) = (By - Ay) * (Cx - Ax).
+			a = (y - line.start[1]) * (line.end[0] - line.start[0])
+			b = (line.end[1] - line.start[1]) * (x - line.start[0])
+
+			return line if a is b
+
 class Triangle
 	constructor: (@points...) ->
 		console.log 'New triangle'
