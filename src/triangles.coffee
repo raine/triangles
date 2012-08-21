@@ -25,18 +25,19 @@ class Canvas
 		@snapMouseToLine x, y
 
 	snapMouseToLine: (x, y) ->
-		for line in @lines
-			mousePoint = line.pointWithinRange x, y, 20
-
-			if mousePoint
+		for line, i in @lines
+			if mousePoint = line.pointWithinRange x, y, 20
 				if not @snapLineMode
+					# Create a circle on the line in position nearest to mouse
 					@snapLineC = Canvas.paper.circle mousePoint.x, mousePoint.y, Point::POINT_RADIUS
 					@snapLineC.attr { fill: '#333', stroke: 'none' }
 
 				@snapLineC.attr { cx: mousePoint.x , cy: mousePoint.y }
 				@snapLineMode = true
 				break
-			else
+
+			# Disable the mode if none of the lines match and it's enabled
+			if @snapLineMode and i is @lines.length - 1
 				@snapLineC?.remove()
 				@snapLineMode = false
 
@@ -57,7 +58,7 @@ class Canvas
 	checkConnections: (x1, y1, x2, y2) ->
 		points = _.filter @points, (p) ->
 			(p.x is x1 and p.y is y1) or
-			(p.x is x2 and p.y is y2)
+				(p.x is x2 and p.y is y2)
 
 		points[0].connect points[1]
 		points[1].connect points[0]
@@ -156,8 +157,8 @@ class Line
 				l = Math.sqrt Math.pow(d1, 2) + Math.pow(h, 2) - (2 * d1 * h * Math.cos(b))
 				# Coordinates of mouse on the line
 				@path.getPointAtLength l
-		else
-			false
+			else
+				false
 
 class Point
 	POINT_RADIUS: 3
