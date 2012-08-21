@@ -1,11 +1,10 @@
 #!/bin/bash
 set -x verbose #echo on
 
-coffee -c triangles.coffee
-# cp -R ../triangles ~/Dropbox/Public
+coffee --bare -c */**.coffee
 rsync --delete-excluded \
   --exclude '.git*' \
   --exclude 'deploy.sh' \
   --exclude '*.coffee' \
-  -vva ../triangles /Users/raine/Dropbox/Public
+  -va ../triangles /Users/raine/Dropbox/Public
 open ~/Dropbox/Public/triangles
