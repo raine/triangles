@@ -19,10 +19,11 @@ class Canvas
 		@pathMode  = false
 
 		@paper.raphael.click @clickHandler
-		@enableMousemove
+		@enableMousemove()
 
 	mousemoveHandler: (event, x, y) =>
-		@snapMouseToLine x, y
+		if not @pathMode
+			@snapMouseToLine x, y
 
 	# Used when a circle is hovered
 	disableMousemove: ->
