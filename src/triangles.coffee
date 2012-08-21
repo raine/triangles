@@ -2,7 +2,6 @@
 # TODO: dragging but who cares really
 # TODO: ability to add points in middle of a line
 # TODO: don't show line snap circle when placing a line
-# TODO: don't show line snap circle when hovering a point
 # TODO: manage connections when a point is added in the middle of a line
 
 COLORS = _.shuffle [ '#FF4D4D', '#FF9D4D', '#FFF64D', '#8EFF4D', '#4DDBFF' ]
@@ -20,10 +19,18 @@ class Canvas
 		@pathMode  = false
 
 		@paper.raphael.click @clickHandler
-		@paper.raphael.mousemove @mousemoveHandler
+		@enableMousemove
 
 	mousemoveHandler: (event, x, y) =>
-		@snapMouseToLine x, y # don't do this when hovering a circle
+		@snapMouseToLine x, y
+
+	# Used when a circle is hovered
+	disableMousemove: ->
+		@paper.raphael.unmousemove @mousemoveHandler
+		@removeSnapLine()
+
+	enableMousemove: ->
+		@paper.raphael.mousemove @mousemoveHandler
 
 	snapMouseToLine: (x, y) ->
 		for line, i in @lines
@@ -193,10 +200,10 @@ class Point
 		@snap.data 'point', this
 
 		@snap.hover =>
-			# Canvas.instance
-			# Canvast.instance.snapLineDisable = true
+			Canvas.instance.disableMousemove()
 			@circle.attr { fill: 'red' }
 		, =>
+			Canvas.instance.enableMousemove()
 			@circle.attr { fill: '#000' }
 
 		@snap.click @startLine
