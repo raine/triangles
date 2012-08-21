@@ -41,14 +41,19 @@ class Canvas
 
 			# Disable the mode if none of the lines match and it's enabled
 			if @snapLineMode and i is @lines.length - 1
-				@snapLineC?.remove()
-				@snapLineMode = false
+				@disableSnapLine()
+
+	disableSnapLine: ->
+		@snapLineC?.remove()
+		@snapLineMode = false
 
 	clickHandler: (event, x, y) =>
-		# TODO: handle line clicks for points
-		# - check if line snap circle is on, add point if is and remove snap
-		# circle
-		@addPoint x, y unless @pathMode
+		if @snapLineMode
+			{ cx, cy } = @snapLineC.attr()
+			@addPoint cx, cy
+			@disableSnapLine()
+		else
+			@addPoint x, y unless @pathMode
 
 	addPoint: (x, y) ->
 		console.log "Point added – x: #{x}, y: #{y}"
