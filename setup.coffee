@@ -1,3 +1,10 @@
+DEBUG = false
+
+oldLog = console.log
+
+console.log = ->
+	oldLog.apply this, arguments if DEBUG
+
 $ ->
 	canvas = new Canvas $("#canvas")
 
