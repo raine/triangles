@@ -1,6 +1,8 @@
 # XXX: Canvas.instance could be saved into an instance variable
 # TODO: dragging but who cares really
 # TODO: ability to add points in middle of a line
+# TODO: don't show line snap circle when placing a line
+# TODO: don't show line snap circle when hovering a point
 
 COLORS = _.shuffle [ '#FF4D4D', '#FF9D4D', '#FFF64D', '#8EFF4D', '#4DDBFF' ]
 
@@ -14,32 +16,35 @@ class Canvas
 		@points    = []
 		@lines     = []
 		@triangles = []
-		@path_mode = false
+		@pathMode = false
 
 		@paper.raphael.click @clickHandler
 		@paper.raphael.mousemove @mousemoveHandler
 
 	mousemoveHandler: (event, x, y) =>
-		any = false
+		@snapMouseToLine x, y
 
+	snapMouseToLine: (x, y) ->
 		for line in @lines
-			mousePoint = line.pointWithinRange x, y, 15
+			mousePoint = line.pointWithinRange x, y, 20
 
 			if mousePoint
-				any = true
-				@c ?= Canvas.paper.circle mousePoint.x, mousePoint.y, 3
-				@c.attr
-					fill: '#555'
-					stroke: 'none'
-					cx: mousePoint.x
-					cy: mousePoint.y
+				if not @snapLineMode
+					@snapLineC = Canvas.paper.circle mousePoint.x, mousePoint.y, Point::POINT_RADIUS
+					@snapLineC.attr { fill: '#333', stroke: 'none' }
 
-		if not any and @c
-			@c.remove()
-			delete @c
+				@snapLineC.attr { cx: mousePoint.x , cy: mousePoint.y }
+				@snapLineMode = true
+				break
+			else
+				@snapLineC?.remove()
+				@snapLineMode = false
 
 	clickHandler: (event, x, y) =>
-		@addPoint x, y unless @path_mode
+		# TODO: handle line clicks for points
+		# - check if line snap circle is on, add point if is and remove snap
+		# circle
+		@addPoint x, y unless @pathMode
 
 	addPoint: (x, y) ->
 		console.log "Point added – x: #{x}, y: #{y}"
@@ -138,9 +143,9 @@ class Line
 
 		# If base is the longest side, (x, y) is "between" @start and @end
 		if base > d1 and base > d2
-			p    = (base + d1 + d2) / 2 						  # Semiperimeter of the triangle
+			p    = (base + d1 + d2) / 2                           # Semiperimeter of the triangle
 			area = Math.sqrt p * (p - d1) * (p - d2) * (p - base) # Area of the triangle
-			h    = (2 * area) / base 							  # Altitude of the triangle from base
+			h    = (2 * area) / base                              # Altitude of the triangle from base
 
 			if h <= 10
 				s = d1 / Math.sin Math.PI/2   # Law of Sines ratio
@@ -183,10 +188,10 @@ class Point
 		@snap.click @startLine
 
 	startLine: (ev, x, y) =>
-		return if Canvas.instance.path_mode
+		return if Canvas.instance.pathMode
 
 		ev.cancelBubble = true
-		Canvas.instance.path_mode = true
+		Canvas.instance.pathMode = true
 
 		path = Canvas.paper.path()
 		path.attr { 'stroke': '#555', 'stroke-width': 2 }
@@ -212,7 +217,7 @@ class Point
 
 			Canvas.paper.raphael.unclick fixPath
 			Canvas.paper.raphael.unmousemove throttledUpdate
-			Canvas.instance.path_mode = false
+			Canvas.instance.pathMode = false
 
 		throttledUpdate = _.throttle updatePath, 10
 		Canvas.paper.raphael.mousemove throttledUpdate
