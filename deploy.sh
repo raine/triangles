@@ -6,5 +6,6 @@ rsync --delete-excluded \
   --exclude '.git*' \
   --exclude 'deploy.sh' \
   --exclude '*.coffee' \
-  -va ../triangles /Users/raine/Dropbox/Public
-open ~/Dropbox/Public/triangles
+  -va $(pwd) ~/Public
+
+open ~/Dropbox/Public/$(basename `pwd`)
