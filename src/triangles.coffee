@@ -74,22 +74,30 @@ class Canvas
 
 	addPoint: (x, y) ->
 		@points.push (point = new Point x, y)
-		console.log "Point added #{point}"
+		console.log "Point added to canvas #{point}"
+
+		line = @getLineByPoint point.x, point.y
+		line.addPoint point if line
 
 	addLine: (x1, y1, x2, y2) ->
-		@lines.push new Line x1, y1, x2, y2
-		@checkConnections arguments...
+		@lines.push (line = new Line x1, y1, x2, y2)
 
-	checkConnections: (x1, y1, x2, y2) ->
 		points = _.filter @points, (p) ->
 			(p.x is x1 and p.y is y1) or
 				(p.x is x2 and p.y is y2)
 
-		unless _.isEmpty points
-			points[0].connect points[1]
-			points[1].connect points[0]
+		points.forEach (p) ->
+			line.addPoint p
 
-			@checkTriangles points[1]
+	# checkConnections: (x1, y1, x2, y2) ->
+		# points = _.filter @points, (p) ->
+		#     (p.x is x1 and p.y is y1) or
+		#         (p.x is x2 and p.y is y2)
+		# unless _.isEmpty points
+		#     points[0].connect points[1]
+		#     points[1].connect points[0]
+
+		#     @checkTriangles points[1]
 
 	triangleExists: (points...) ->
 		_.any @triangles, (t) ->
@@ -172,6 +180,7 @@ class Line
 
 	addPoint: (point) ->
 		@points.push point
+		console.log "Line #{this} [#{@points.length}] - Point added #{point}"
 
 	# See if (x, y) is within range of the line
 	# Returns Raphael point object of mouse coordinates on the line
@@ -199,6 +208,10 @@ class Line
 				@path.getPointAtLength l
 			else
 				false
+
+	toString: ->
+		"#{Canvas.instance.lines.indexOf(this) + 1}"
+
 
 class Point
 	POINT_RADIUS: 3
@@ -229,7 +242,6 @@ class Point
 			@circle.attr { fill: '#000' }
 
 		@snap.click @startLine
-		@foobar()
 
 	startLine: (ev, x, y) =>
 		return if Canvas.instance.pathMode
@@ -271,6 +283,7 @@ class Point
 		Canvas.paper.raphael.mousemove throttledUpdate
 		Canvas.paper.raphael.click fixPath
 
+	# Connect point to a line if it's on any
 	foobar: ->
 		line = Canvas.instance.getLineByPoint @x, @y
 		line.addPoint this if line
