@@ -1,9 +1,8 @@
 # XXX: Canvas.instance could be saved into an instance variable
 # TODO: dragging but who cares really
-# TODO: ability to add points in middle of a line
-# TODO: manage connections when a point is added in the middle of a line
 # TODO: when point is added in a line, should check if it's on a line
 # TODO: could continue in line mode after connecting
+# TODO: triangle fills should probably be pushed to back when a line is added
 
 COLORS = _.shuffle [ '#FF4D4D', '#FF9D4D', '#FFF64D', '#8EFF4D', '#4DDBFF' ]
 
@@ -74,8 +73,8 @@ class Canvas
 			@addPoint x, y unless @pathMode
 
 	addPoint: (x, y) ->
-		console.log "Point added – x: #{x}, y: #{y}"
-		@points.push new Point x, y
+		@points.push (point = new Point x, y)
+		console.log "Point added #{point}"
 
 	addLine: (x1, y1, x2, y2) ->
 		@lines.push new Line x1, y1, x2, y2
@@ -168,6 +167,11 @@ class Line
 
 			@path.toBack()
 
+		@points = []
+
+	addPoint: (point) ->
+		@points.push point
+
 	# See if (x, y) is within range of the line
 	# Returns Raphael point object of mouse coordinates on the line
 	pointWithinRange: (x, y, range) ->
@@ -224,6 +228,7 @@ class Point
 			@circle.attr { fill: '#000' }
 
 		@snap.click @startLine
+		@foobar()
 
 	startLine: (ev, x, y) =>
 		return if Canvas.instance.pathMode
@@ -265,8 +270,9 @@ class Point
 		Canvas.paper.raphael.mousemove throttledUpdate
 		Canvas.paper.raphael.click fixPath
 
-	toString: ->
-		[ @x, @y ].join ','
+	foobar: ->
+		line = Canvas.instance.getLineByPoint @x, @y
+		line.addPoint this if line
 
 	connect: (point) ->
 		console.log "Point #{this} connected to #{point}"
@@ -274,3 +280,6 @@ class Point
 
 	color: (str) ->
 		@circle.attr { fill: str }
+
+	toString: ->
+		"(#{@x}, #{@y})"
