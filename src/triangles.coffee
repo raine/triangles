@@ -1,8 +1,9 @@
 # XXX: Canvas.instance could be saved into an instance variable
 # TODO: dragging but who cares really
 # TODO: ability to add points in middle of a line
-# TODO: don't show line snap circle when placing a line
 # TODO: manage connections when a point is added in the middle of a line
+# TODO: when point is added in a line, should check if it's on a line
+# TODO: could continue in line mode after connecting
 
 COLORS = _.shuffle [ '#FF4D4D', '#FF9D4D', '#FFF64D', '#8EFF4D', '#4DDBFF' ]
 
@@ -20,6 +21,12 @@ class Canvas
 
 		@paper.raphael.click @clickHandler
 		@enableMousemove()
+		@bindKeys()
+
+	bindKeys: ->
+		$(document).keyup (e) ->
+			if e.keyCode is 27
+				eve 'esc'
 
 	mousemoveHandler: (event, x, y) =>
 		if not @pathMode
@@ -238,17 +245,21 @@ class Point
 
 			path.attr { path: "M#{@x} #{@y} L#{l}" }
 
+		cancel = ->
+			path.remove()
+			Canvas.paper.raphael.unclick fixPath
+			Canvas.paper.raphael.unmousemove throttledUpdate
+			Canvas.instance.pathMode = false
+
 		fixPath = (ev, mouseX, mouseY) =>
 			point = Canvas.instance.getPointsByPoint mouseX, mouseY
 
 			if point and point isnt this
 				Canvas.instance.addLine @x, @y, point.x, point.y
 
-			path.remove()
+			cancel()
 
-			Canvas.paper.raphael.unclick fixPath
-			Canvas.paper.raphael.unmousemove throttledUpdate
-			Canvas.instance.pathMode = false
+		eve.once "esc", cancel
 
 		throttledUpdate = _.throttle updatePath, 10
 		Canvas.paper.raphael.mousemove throttledUpdate
@@ -263,4 +274,3 @@ class Point
 
 	color: (str) ->
 		@circle.attr { fill: str }
-
