@@ -85,10 +85,11 @@ class Canvas
 			(p.x is x1 and p.y is y1) or
 				(p.x is x2 and p.y is y2)
 
-		points[0].connect points[1]
-		points[1].connect points[0]
+		unless _.isEmpty points
+			points[0].connect points[1]
+			points[1].connect points[0]
 
-		@checkTriangles points[1]
+			@checkTriangles points[1]
 
 	triangleExists: (points...) ->
 		_.any @triangles, (t) ->
