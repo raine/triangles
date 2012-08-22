@@ -129,7 +129,7 @@ class Canvas
 			a = (y - line.start[1]) * (line.end[0] - line.start[0])
 			b = (line.end[1] - line.start[1]) * (x - line.start[0])
 
-			return line if a is b
+			return line if Math.abs(a - b) <= 100
 
 class Triangle
 	constructor: (@points...) ->
