@@ -1,6 +1,5 @@
 # XXX: Canvas.instance could be saved into an instance variable
 # TODO: dragging but who cares really
-# TODO: when point is added in a line, should check if it's on a line
 # TODO: could continue in line mode after connecting
 # TODO: triangle fills should probably be pushed to back when a line is added
 
@@ -80,14 +79,19 @@ class Canvas
 		line.addPoint point if line
 
 	addLine: (x1, y1, x2, y2) ->
-		@lines.push (line = new Line x1, y1, x2, y2)
-
-		points = _.filter @points, (p) ->
+		[ p1, p2 ] = _.filter @points, (p) ->
 			(p.x is x1 and p.y is y1) or
 				(p.x is x2 and p.y is y2)
 
-		points.forEach (p) -> line.addPoint p
-		@checkTriangles _.last points
+		unless @getLineByPoints p1, p2
+			@lines.push (line = new Line x1, y1, x2, y2)
+
+			line.addPoint p1
+			line.addPoint p2
+
+			@checkTriangles p2
+		else
+			console.log 'Line exists bro'
 
 	triangleExists: (points...) ->
 		_.any @triangles, (t) ->
@@ -100,8 +104,7 @@ class Canvas
 		# connected to ´point´
 		point.connected().forEach (p) =>
 			# Find the line that connects point and p
-			connector = _.find @lines, (line) ->
-				_.include(line.points, point) and _.include(line.points, p)
+			connector = @getLineByPoints point, p
 
 			# Ignore points that are in the same line that connects point and p
 			# so that a single line with 3 points doesn't register as a triangle
@@ -117,6 +120,10 @@ class Canvas
 						console.log 'Triangle exists'
 
 			checked.push p
+
+	getLineByPoints: (p1, p2) ->
+		_.find @lines, (line) ->
+			_.include(line.points, p1) and _.include(line.points, p2)
 
 	# Returns Point at x,y including the snap radius
 	getPointsByPoint: (x, y) ->
