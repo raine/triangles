@@ -86,18 +86,8 @@ class Canvas
 			(p.x is x1 and p.y is y1) or
 				(p.x is x2 and p.y is y2)
 
-		points.forEach (p) ->
-			line.addPoint p
-
-	# checkConnections: (x1, y1, x2, y2) ->
-		# points = _.filter @points, (p) ->
-		#     (p.x is x1 and p.y is y1) or
-		#         (p.x is x2 and p.y is y2)
-		# unless _.isEmpty points
-		#     points[0].connect points[1]
-		#     points[1].connect points[0]
-
-		#     @checkTriangles points[1]
+		points.forEach (p) -> line.addPoint p
+		@checkTriangles _.last points
 
 	triangleExists: (points...) ->
 		_.any @triangles, (t) ->
@@ -108,11 +98,19 @@ class Canvas
 
 		# Check every connected points connections and see which are
 		# connected to ´point´
-		point.connected.forEach (p) =>
-			# ´p´s connections that are connected to ´point´
-			notChecked = _.without p.connected, checked...
+		point.connected().forEach (p) =>
+			# Find the line that connects point and p
+			connector = _.find @lines, (line) ->
+				_.include(line.points, point) and _.include(line.points, p)
+
+			# Ignore points that are in the same line that connects point and p
+			# so that a single line with 3 points doesn't register as a triangle
+			notChecked = _.difference _.without(p.connected(), checked...), connector.points
+
+			# Find ´p´s connections (excluding the ones that are on the same
+			# line as described above) that are connected to ´point´
 			notChecked.forEach (_p) =>
-				if _.include _p.connected, point
+				if _.include _p.connected(), point
 					unless @triangleExists point, p, _p
 						@triangles.push new Triangle point, p, _p
 					else
@@ -126,7 +124,7 @@ class Canvas
 		# pythagorean equation; problem is that it doesn't always detect
 		# the elements
 		circle = _.first _.filter @paper.getElementsByPoint(x, y), (e) ->
-			e.type is "circle"
+			e.type is 'circle'
 
 		circle?.data 'point'
 
@@ -212,13 +210,25 @@ class Line
 	toString: ->
 		"#{Canvas.instance.lines.indexOf(this) + 1}"
 
+	highlight: ->
+		oldColor = @path.attrs.stroke
+		animate = (c, cb) =>
+			@path.animate
+				stroke: c
+				500
+				cb
+
+		animate '#FF4D4D', ->
+			setTimeout(
+				-> animate(oldColor)
+			, 2000)
 
 class Point
 	POINT_RADIUS: 3
 	SNAP_RADIUS: 8
 
 	constructor: (@x, @y) ->
-		@connected = []
+		# @connected = []
 
 		@circle = Canvas.paper.circle x, y, Point::POINT_RADIUS
 		@circle.attr
@@ -282,6 +292,13 @@ class Point
 		throttledUpdate = _.throttle updatePath, 10
 		Canvas.paper.raphael.mousemove throttledUpdate
 		Canvas.paper.raphael.click fixPath
+
+	connected: ->
+		# XXX: Point could keep track of lines
+		lines = _.filter Canvas.instance.lines, (line) =>
+			_.include line.points, this
+
+		_.without(_.flatten(_.pluck(lines, 'points')), this)
 
 	# Connect point to a line if it's on any
 	foobar: ->
