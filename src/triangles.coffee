@@ -79,6 +79,8 @@ class Canvas
 		line = @getLineByPoint point.x, point.y
 		line.addPoint point if line
 
+		point
+
 	addLine: (x1, y1, x2, y2) ->
 		[ p1, p2 ] = _.filter @points, (p) ->
 			(p.x is x1 and p.y is y1) or
@@ -93,6 +95,8 @@ class Canvas
 			@checkTriangles p2
 		else
 			console.log 'Line exists bro'
+
+		line
 
 	triangleExists: (points...) ->
 		_.any @triangles, (t) ->
