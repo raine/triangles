@@ -1,7 +1,7 @@
 # XXX: Canvas.instance could be saved into an instance variable
 # TODO: dragging but who cares really
 # TODO: could continue in line mode after connecting
-# TODO: triangle fills should probably be pushed to back when a line is added
+# TODO: don't allow circles to be placed too near each other
 
 COLORS = _.shuffle [ '#FF4D4D', '#FF9D4D', '#FFF64D', '#8EFF4D', '#4DDBFF' ]
 
@@ -116,6 +116,7 @@ class Canvas
 				if _.include _p.connected(), point
 					unless @triangleExists point, p, _p
 						@triangles.push new Triangle point, p, _p
+						@reorder()
 					else
 						console.log 'Triangle exists'
 
@@ -144,6 +145,13 @@ class Canvas
 
 			return line if Math.abs(a - b) <= 100
 
+	# Move lines and points on top of everything else (triangle fills)
+	reorder: ->
+		@lines.forEach (line) -> line.path.toFront()
+		@points.forEach (point) ->
+			point.snap.toFront()
+			point.circle.toFront()
+
 class Triangle
 	constructor: (@points...) ->
 		console.log 'New triangle'
@@ -156,9 +164,8 @@ class Triangle
 		path = Canvas.paper.path pathStr
 		path.attr
 			fill : Canvas.instance.colors.next()
-			'fill-opacity': 0.5
+			'fill-opacity': 1
 			stroke: 'none'
-		path.toBack()
 
 class Line
 	constructor: (obj) ->
@@ -175,7 +182,7 @@ class Line
 
 			@path = Canvas.paper.path()
 			@path.attr
-				'stroke': '#555'
+				'stroke': '#444'
 				'stroke-width': 2
 				path: "M#{@start.join ','} L#{@end.join ','}"
 
