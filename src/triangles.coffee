@@ -182,6 +182,7 @@ class Line
 				'stroke-width': 2
 				path: "M#{@start.join ','} L#{@end.join ','}"
 
+			@path.node.style.pointerEvents = 'none'
 			@path.toBack()
 
 		@points = []

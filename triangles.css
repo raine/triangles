@@ -9,8 +9,3 @@ html, body {
 	height: 342px;
 	background-color: rgb(245,245,245);
 }
-
-svg path {
-	/* ignores hover on paths */
-	pointer-events: none;
-}
