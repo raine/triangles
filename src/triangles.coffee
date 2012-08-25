@@ -5,6 +5,7 @@
 # TODO: show how many triangles
 
 COLORS = _.shuffle [ '#FF4D4D', '#FF9D4D', '#FFF64D', '#8EFF4D', '#4DDBFF' ]
+COLORS = COLORS.map (e) -> (new jColour e).lighten(15).saturate(20).hex()
 
 class Canvas
 	constructor: (arg) ->
