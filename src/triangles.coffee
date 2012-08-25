@@ -268,7 +268,10 @@ class Point
 		Canvas.instance.pathMode = true
 
 		path = Canvas.paper.path()
-		path.attr { 'stroke': '#555', 'stroke-width': 2 }
+		path.attr
+			'stroke': '#888'
+			'stroke-width': 2
+			'stroke-dasharray': '-'
 		# path.toBack() TODO: with this the path will be behind triangle fills
 
 		updatePath = (ev, mouseX, mouseY) =>
