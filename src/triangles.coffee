@@ -138,8 +138,9 @@ class Canvas
 
 	getLineByPoint: (x, y) ->
 		for line in @lines
-			[ min_x, max_x ] = [ line.start[0], line.end[0] ].sort()
-			[ min_y, max_y ] = [ line.start[1], line.end[1] ].sort()
+			intSort = (a, b) -> a - b
+			[ min_x, max_x ] = [ line.start[0], line.end[0] ].sort intSort
+			[ min_y, max_y ] = [ line.start[1], line.end[1] ].sort intSort
 
 			if (x >= min_x and x <= max_x) and (y >= min_y and y <= max_y)
 				# http://stackoverflow.com/questions/6865832/detecting-if-a-point-is-of-a-line-segment
