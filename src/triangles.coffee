@@ -2,6 +2,7 @@
 # TODO: dragging but who cares really
 # TODO: could continue in line mode after connecting
 # TODO: don't allow circles to be placed too near each other
+# TODO: show how many triangles
 
 COLORS = _.shuffle [ '#FF4D4D', '#FF9D4D', '#FFF64D', '#8EFF4D', '#4DDBFF' ]
 
