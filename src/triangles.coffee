@@ -128,13 +128,8 @@ class Canvas
 
 	# Returns Point at x,y including the snap radius
 	getPointsByPoint: (x, y) ->
-		# TODO: getElementsByPoint is bugged, can be solved with
-		# pythagorean equation; problem is that it doesn't always detect
-		# the elements
-		circle = _.first _.filter @paper.getElementsByPoint(x, y), (e) ->
-			e.type is 'circle'
-
-		circle?.data 'point'
+		_.find @points, (p) ->
+			Utils.distance(p.x, p.y, x, y) <= Point::SNAP_RADIUS
 
 	getLineByPoint: (x, y) ->
 		for line in @lines
@@ -254,9 +249,6 @@ class Point
 			'fill-opacity': 0.1
 			fill: '#000'
 			stroke: 'none'
-
-		@circle.data 'point', this
-		@snap.data 'point', this
 
 		@snap.hover =>
 			Canvas.instance.disableMousemove()
