@@ -134,12 +134,16 @@ class Canvas
 
 	getLineByPoint: (x, y) ->
 		for line in @lines
-			# http://stackoverflow.com/questions/6865832/detecting-if-a-point-is-of-a-line-segment
-			# (Cy - Ay)  * (Bx - Ax) = (By - Ay) * (Cx - Ax).
-			a = (y - line.start[1]) * (line.end[0] - line.start[0])
-			b = (line.end[1] - line.start[1]) * (x - line.start[0])
+			[ min_x, max_x ] = [ line.start[0], line.end[0] ].sort()
+			[ min_y, max_y ] = [ line.start[1], line.end[1] ].sort()
 
-			return line if Math.abs(a - b) <= 100
+			if (x >= min_x and x <= max_x) and (y >= min_y and y <= max_y)
+				# http://stackoverflow.com/questions/6865832/detecting-if-a-point-is-of-a-line-segment
+				# (Cy - Ay)  * (Bx - Ax) = (By - Ay) * (Cx - Ax).
+				a = (y - line.start[1]) * (line.end[0] - line.start[0])
+				b = (line.end[1] - line.start[1]) * (x - line.start[0])
+
+				return line if Math.abs(a - b) <= 100
 
 	# Move lines and points on top of everything else (triangle fills)
 	reorder: ->
