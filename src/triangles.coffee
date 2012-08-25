@@ -244,6 +244,8 @@ class Point
 			fill: 'black'
 			stroke: 'none'
 
+		@circle.node.style.pointerEvents = 'none'
+
 		@snap = Canvas.paper.circle x, y, Point::SNAP_RADIUS
 		@snap.attr
 			'fill-opacity': 0.1
