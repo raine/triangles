@@ -8,4 +8,5 @@ html, body {
 	width: 512px;
 	height: 342px;
 	background-color: rgb(245,245,245);
+	box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.3);
 }
