@@ -274,7 +274,7 @@ class Point
 		path = Canvas.paper.path()
 		path.attr
 			'stroke': '#888'
-			'stroke-width': 2
+			'stroke-width': 1.5
 			'stroke-dasharray': '-'
 		# path.toBack() TODO: with this the path will be behind triangle fills
 
