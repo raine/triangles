@@ -239,8 +239,6 @@ class Point
 	SNAP_RADIUS: 8
 
 	constructor: (@x, @y) ->
-		# @connected = []
-
 		@circle = Canvas.paper.circle x, y, Point::POINT_RADIUS
 		@circle.attr
 			fill: 'black'
@@ -309,15 +307,6 @@ class Point
 			_.include line.points, this
 
 		_.without(_.flatten(_.pluck(lines, 'points')), this)
-
-	# Connect point to a line if it's on any
-	foobar: ->
-		line = Canvas.instance.getLineByPoint @x, @y
-		line.addPoint this if line
-
-	connect: (point) ->
-		console.log "Point #{this} connected to #{point}"
-		@connected.push point
 
 	color: (str) ->
 		@circle.attr { fill: str }
