@@ -5,9 +5,10 @@ html, body {
 }
 
 #canvas {
-	width: 512px;
-	height: 342px;
-	background-color: rgb(245,245,245);
+	width: 500px;
+	height: 340px;
+	/* background-color: rgb(245,245,245); */
+	background-image: url(grid_bg.png);
 	box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.3);
 	position: relative;
 }

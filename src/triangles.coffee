@@ -68,6 +68,9 @@ class Canvas
 		@snapLineMode = false
 
 	clickHandler: (event, x, y) =>
+		x = Raphael.snapTo 20, x, 10
+		y = Raphael.snapTo 20, y, 10
+
 		if @snapLineMode
 			{ cx, cy } = @snapLineC.attr()
 			@addPoint cx, cy
@@ -173,7 +176,7 @@ class Triangle
 		path = Canvas.paper.path pathStr
 		path.attr
 			fill : Canvas.instance.colors.next()
-			'fill-opacity': 1
+			'fill-opacity': 0.5
 			stroke: 'none'
 
 class Line
