@@ -1,8 +1,10 @@
 # XXX: Canvas.instance could be saved into an instance variable
 # TODO: dragging but who cares really
 # TODO: could continue in line mode after connecting
-# TODO: don't allow circles to be placed too near each other
-# TODO: show how many triangles
+# TODO: it's impossible to make certain type of triangles
+#       possible solutions:
+#   	- show a grid so that you can extend a line
+#   	- hold ctrl/shift when placing a line to extend line
 
 COLORS = _.shuffle [ '#FF4D4D', '#FF9D4D', '#FFF64D', '#8EFF4D', '#4DDBFF' ]
 COLORS = COLORS.map (e) -> (new jColour e).lighten(15).saturate(20).hex()
