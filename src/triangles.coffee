@@ -122,6 +122,7 @@ class Canvas
 				if _.include _p.connected(), point
 					unless @triangleExists point, p, _p
 						@triangles.push new Triangle point, p, _p
+						eve 'triangle'
 						@reorder()
 					else
 						console.log 'Triangle exists'

@@ -9,4 +9,15 @@ html, body {
 	height: 342px;
 	background-color: rgb(245,245,245);
 	box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.3);
+	position: relative;
+}
+
+.triangles {
+	position: absolute;
+	bottom: 0;
+	font: 300 24px "Myriad Pro", "Helvetica Neue", Helvetica, "Arial Unicode MS", Arial, sans-serif;
+	color: #555;
+	padding: 0 0 10px 10px;
+	-webkit-user-select: none;
+	text-shadow: 1px 1px #fff;
 }

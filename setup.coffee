@@ -7,6 +7,8 @@ console.log = ->
 
 $ ->
 	canvas = new Canvas $("#canvas")
+	eve.on 'triangle', ->
+		$('.triangles .value').text canvas.triangles.length
 
 	canvas.addPoint 50,  50
 	canvas.addPoint 100, 100
