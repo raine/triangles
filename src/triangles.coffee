@@ -118,7 +118,7 @@ class Canvas
 
 			# Ignore points that are in the same line that connects point and p
 			# so that a single line with 3 points doesn't register as a triangle
-			notChecked = _.difference _.without(p.connected(), checked...), connector.points
+			notChecked = _.difference _.without(p.connected(), []...), connector.points
 
 			# Find ´p´s connections (excluding the ones that are on the same
 			# line as described above) that are connected to ´point´
