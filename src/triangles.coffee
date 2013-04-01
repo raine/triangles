@@ -3,7 +3,6 @@
 # TODO: could continue in line mode after connecting
 # TODO: it's impossible to make certain type of triangles
 #       possible solutions:
-#   	- show a grid so that you can extend a line
 #   	- hold ctrl/shift when placing a line to extend line
 
 COLORS = _.shuffle [ '#FF4D4D', '#FF9D4D', '#FFF64D', '#8EFF4D', '#4DDBFF' ]
